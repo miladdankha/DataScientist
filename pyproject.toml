@@ -1,0 +1,6 @@
+[project]
+name = "observatoire-technologies"
+version = "0.1.0"
+description = "Enquête Stack Overflow 2026 pour une école d’ingénieurs"
+requires-python = ">=3.12,<3.13"
+dependencies = ["pandas==3.1.1", "streamlit==1.67.0"]
