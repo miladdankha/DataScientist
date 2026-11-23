@@ -2,8 +2,10 @@ from pathlib import Path
 
 import streamlit as st
 
+from database_choices import render as render_database_choices
 from get_data import ANSWERS, SCHEMA, fetch
 from logic import FAMILIES, METRICS, load_survey, population, ranking
+
 
 st.set_page_config(page_title="Technologies · Engineering School", layout="wide")
 
@@ -13,8 +15,6 @@ def cached_survey(path: Path, modification_ns: int):
     return load_survey(path)
 
 
-st.title("Which languages and tools should the school emphasize next year?")
-st.caption("Engineering curriculum · 2026 Stack Overflow Developer Survey")
 if not ANSWERS.is_file() or not SCHEMA.is_file():
     try:
         with st.spinner("Downloading and verifying the official survey files…"):
@@ -26,45 +26,96 @@ if not ANSWERS.is_file() or not SCHEMA.is_file():
         st.stop()
 
 survey = cached_survey(ANSWERS, ANSWERS.stat().st_mtime_ns)
+
 with st.sidebar:
+    page = st.radio("Page", ["Overview", "Database choices"], key="page")
     st.header("Survey filters")
-    region = st.radio("Country of residence", ["France", "Outside France"], key="region")
+    region = st.radio(
+        "Country of residence", ["France", "Outside France"], key="region"
+    )
+
+group = population(survey, region)
+
+if page == "Database choices":
+    render_database_choices(group, region)
+    st.stop()
+
+with st.sidebar:
     family = st.selectbox("Technology family", list(FAMILIES), key="family")
     metric = st.radio("Measure", list(METRICS), key="metric")
 
-group = population(survey, region)
+st.title("Which languages and tools should the school emphasize next year?")
+st.caption("Engineering curriculum · 2026 Stack Overflow Developer Survey")
+
 table, n = ranking(group, family, metric)
 scope = f"2026 · {region} · respondents who code as a primary part of their job"
 st.caption(f"{scope} · {len(group):,} respondents in this group")
+
 if table.empty:
     st.info(f"No named technologies for this selection ({n:,} respondents answered the question).")
     st.stop()
 
-leaders = table.loc[table["Respondents"].eq(table.iloc[0]["Respondents"]), "Technology"]
+leaders = table.loc[
+    table["Respondents"].eq(table.iloc[0]["Respondents"]), "Technology"
+]
 st.header(f"{', '.join(leaders)} · {table.iloc[0]['Share (%)']:.1f}% of respondents")
+
 if family == "Languages" and region == "France":
     findings = []
-    for indicator, period in [("Past-year use", "Most used in the past year"), ("Desired use next year", "Most wanted for next year")]:
+    for indicator, period in [
+        ("Past-year use", "Most used in the past year"),
+        ("Desired use next year", "Most wanted for next year"),
+    ]:
         results, base = ranking(group, family, indicator)
         if not results.empty:
             count = results.iloc[0]["Respondents"]
-            names = " and ".join(results.loc[results["Respondents"].eq(count), "Technology"])
+            names = " and ".join(
+                results.loc[results["Respondents"].eq(count), "Technology"]
+            )
             findings.append(f"{period}: {names} ({count:,} of {base:,} respondents)")
     st.write(" · ".join(findings))
+
 st.subheader(f"{family} · {metric.lower()}")
-st.caption(f"{scope} · {n:,} respondents answered this question · up to 10 leading technologies")
-st.vega_lite_chart(table.head(10), {
-    "mark": {"type": "bar", "color": "#176B87"},
-    "encoding": {
-        "x": {"field": "Share (%)", "type": "quantitative", "scale": {"domain": [0, 100]},
-              "title": "Share of respondents (%)"},
-        "y": {"field": "Technology", "type": "nominal", "sort": "-x", "title": None},
-        "tooltip": [{"field": "Technology"}, {"field": "Respondents", "type": "quantitative"},
-                    {"field": "Share (%)", "type": "quantitative", "format": ".1f"}],
+st.caption(
+    f"{scope} · {n:,} respondents answered this question · up to 10 leading technologies"
+)
+
+st.vega_lite_chart(
+    table.head(10),
+    {
+        "mark": {"type": "bar", "color": "#176B87"},
+        "encoding": {
+            "x": {
+                "field": "Share (%)",
+                "type": "quantitative",
+                "scale": {"domain": [0, 100]},
+                "title": "Share of respondents (%)",
+            },
+            "y": {
+                "field": "Technology",
+                "type": "nominal",
+                "sort": "-x",
+                "title": None,
+            },
+            "tooltip": [
+                {"field": "Technology"},
+                {"field": "Respondents", "type": "quantitative"},
+                {"field": "Share (%)", "type": "quantitative", "format": ".1f"},
+            ],
+        },
     },
-}, width="stretch")
+    width="stretch",
+)
+
 with st.expander("View all counts and percentages"):
-    st.dataframe(table, hide_index=True, column_config={"Share (%)": st.column_config.NumberColumn(format="%.1f%%")})
+    st.dataframe(
+        table,
+        hide_index=True,
+        column_config={
+            "Share (%)": st.column_config.NumberColumn(format="%.1f%%")
+        },
+    )
+
 with st.expander("Source and methodology"):
     st.markdown(
         "The survey is voluntary. Geography reflects each respondent’s reported country of residence. "
