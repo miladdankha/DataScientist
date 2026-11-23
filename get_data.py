@@ -25,7 +25,7 @@ def fetch(directory=DATA):
     for name, expected in DIGESTS.items():
         target = directory / name
         if target.is_file() and checksum(target) == expected:
-            print(f"Vérifié : {name}")
+            print(f"Verified: {name}")
             continue
         with NamedTemporaryFile(dir=directory, delete=False) as tmp:
             staging = Path(tmp.name)
@@ -33,9 +33,9 @@ def fetch(directory=DATA):
             with urlopen(BASE_URL + name, timeout=120) as response, staging.open("wb") as out:
                 copyfileobj(response, out)
             if checksum(staging) != expected:
-                raise ValueError(f"Empreinte SHA-256 inattendue pour {name}. Vérifier la version officielle.")
+                raise ValueError(f"Unexpected SHA-256 checksum for {name}. Check the official release.")
             staging.replace(target)
-            print(f"Téléchargé et vérifié : {name}")
+            print(f"Downloaded and verified: {name}")
         finally:
             staging.unlink(missing_ok=True)
 

@@ -1,10 +1,10 @@
-# Observatoire des technologies · Stack Overflow 2026
+# Technology Observatory · Stack Overflow 2026
 
-Application Streamlit pour une école d’ingénieurs française. Elle éclaire la question « Quels langages et outils l’école devrait-elle renforcer dans ses enseignements l’an prochain ? »
+Which languages and tools should a French engineering school emphasize in next year’s curriculum? This Streamlit dashboard explores what professionals used in the past year and what they want to use next year.
 
-## Lancement depuis un clone neuf
+## Run from a fresh clone
 
-Prérequis : Git, [uv](https://docs.astral.sh/uv/) et un accès réseau au premier lancement. Depuis le terminal :
+Install Git and [uv](https://docs.astral.sh/uv/). The first run requires an internet connection.
 
 ```sh
 git clone https://github.com/miladdankha/DataScientist.git
@@ -14,12 +14,12 @@ uv run python get_data.py
 uv run streamlit run app.py
 ```
 
-Ouvrir l’adresse locale indiquée par Streamlit. Python 3.12 est déclaré dans le projet. Le téléchargement récupère les réponses publiques et le dictionnaire 2026 dans `data/` et vérifie leur empreinte SHA-256. Ces deux CSV restent locaux. Les lancements suivants peuvent réutiliser les fichiers.
+Open the local URL printed by Streamlit. The project uses Python 3.12. The download script saves the public responses and survey schema in `data/` and verifies each file’s SHA-256 checksum. Both CSVs stay local and can be reused on subsequent runs.
 
-## Lire le dashboard
+## Read the dashboard
 
-La vue initiale présente les langages utilisés par les répondants professionnels vivant en France. Le panneau latéral permet de choisir le territoire, la famille de technologies et l’indicateur. Chaque graphique affiche la base de calcul. Le tableau dépliable donne les résultats complets.
+The dashboard opens with languages used by respondents living in France who code as a primary part of their job. Use the sidebar to change the region, technology family, or measure. Each chart shows how many people answered that question. Expand the table to see the full ranking.
 
-Les réponses proviennent d’une enquête volontaire. Le lieu de résidence ne renseigne ni le pays de l’employeur ni le marché de recrutement. La comparaison hors France est descriptive et ne corrige pas les différences de composition des groupes.
+Participation was voluntary. The geographic filter describes where respondents live. It provides no direct measure of employer location or hiring demand. Comparisons with respondents outside France are descriptive and do not adjust for differences in group composition.
 
-[Architecture et conventions des futurs axes](ARCHITECTURE.md) · [Questionnaire, données et licence](https://github.com/StackExchange/Survey/tree/main/packages/archive/2026)
+[Architecture and guidance for analysis pages](ARCHITECTURE.md) · [Survey files, questionnaire, and license](https://github.com/StackExchange/Survey/tree/main/packages/archive/2026)

@@ -1,24 +1,22 @@
-# Architecture du socle commun
+# Shared dashboard architecture
 
-Le parcours d’un chiffre suit quatre étapes.
-
-| Étape | Fichier et point d’entrée | Responsabilité |
+| Stage | File and entry point | Responsibility |
 |---|---|---|
-| Acquisition | `get_data.py · fetch` | Récupère les deux objets Git LFS publics 2026. Un fichier temporaire remplace sa cible après vérification SHA-256. |
-| Chargement | `logic.py · load_survey` | Lit les 13 colonnes utiles, vérifie l’unicité et la présence de ResponseId, puis utilise cet identifiant comme index. |
-| Population et calcul | `logic.py · population, ranking` | Sélectionne la population, décompose les réponses multiples et calcule les effectifs et pourcentages par item. Ces fonctions sont indépendantes de Streamlit. |
-| Interface | `app.py · cached_survey` et dashboard | Met en cache la lecture du CSV, applique les sélections, puis présente le constat, le classement et le tableau détaillé. |
+| Download | `get_data.py` · `fetch` | Downloads both public 2026 files from Git LFS. Replaces each target only after verifying the temporary file’s SHA-256 checksum. |
+| Load | `logic.py` · `load_survey` | Reads the 13 required columns, checks that every row has a unique `ResponseId`, and uses it as the index. |
+| Analyze | `logic.py` · `population`, `ranking` | Selects respondents, splits multiple-choice answers, and calculates counts and percentages per question. These functions run independently of Streamlit. |
+| Display | `app.py` · `cached_survey` and dashboard | Caches the loaded data, applies the selected filters, and displays the finding, chart, and full ranking. |
 
-## Population et dénominateur
+## Population and denominator
 
-Le critère professionnel est la réponse « I create code as a primary part of my job » à CodeMain. Country contient le pays de résidence. La vue France retient France et la vue hors France exige un pays connu différent de France.
+Respondents qualify if they selected “I create code as a primary part of my job” for `CodeMain`. The France view includes respondents whose reported `Country` of residence is France. The Outside France view requires a known country of residence other than France.
 
-Les cinq familles correspondent aux préfixes Languages, Databases, WebFramework, DevIDE et CloudPlat. Cette dernière famille inclut aussi les conteneurs et les outils d’infrastructure. Le suffixe HaveWorkedWith renseigne la pratique au cours de l’année écoulée et WantToWorkWith les souhaits pour l’année à venir. Les formulations détaillées de chaque item figurent dans survey_results_schema.csv.
+The five technology families use the survey column prefixes `Languages`, `Databases`, `WebFramework`, `DevIDE`, and `CloudPlat`. The last group includes containers and infrastructure tools. The suffix `HaveWorkedWith` describes use in the past year. `WantToWorkWith` describes what respondents want to use in the coming year. The exact wording for each question appears in `survey_results_schema.csv`.
 
-Pour une famille et un indicateur, le dénominateur est le nombre de personnes ayant coché au moins une option. Le numérateur est le nombre de répondants distincts ayant coché la technologie. Les choix multiples peuvent porter la somme des parts au-delà de 100 %. Une réponse « Other, please specify » compte dans le dénominateur. Les bases de l’usage et du souhait peuvent différer. La première édition du socle porte uniquement sur 2026.
+For each family and measure, the denominator counts people who selected at least one option. The numerator counts distinct respondents who selected a particular technology. People could select multiple options, so the shares can add up to more than 100%. Selecting “Other, please specify” counts toward the denominator. Only named technologies appear in the ranking. Past and desired use can have different denominators. This version covers the 2026 survey.
 
-## Cache, session et branches
+## Cache, session state, and branches
 
-`st.cache_data` conserve les colonnes chargées entre les interactions. La clé inclut le chemin et la date de modification du fichier. Les widgets portent les clés de session `region`, `family` et `metric`. Le classement est recalculé sur la sélection courante.
+`st.cache_data` retains the loaded columns between interactions. The cache key includes the file path and its modification time. Widgets store the current choices under the session keys `region`, `family`, and `metric`. The dashboard recalculates the ranking for the current selection.
 
-Le dashboard commun vit sur main. Chaque membre peut développer son axe sur une branche dédiée en réutilisant la population et les calculs communs. Pour ajouter un indicateur, définir sa base et son unité dans la logique avant de l’afficher dans une vue. Les cinq familles du sélecteur sont des vues descriptives du socle ; les axes individuels seront définis par le groupe.
+The shared dashboard lives on `main`. Each team member can develop an analysis on a dedicated branch and reuse the common population and ranking functions. When adding a measure, define its denominator and unit in the analysis code before displaying it. The selector’s five technology families provide descriptive views. The team chooses the questions for its individual analyses.
