@@ -39,3 +39,20 @@ def ranking(group, family, metric):
     table = counts.rename("Respondents").reset_index()
     table["Share (%)"] = 100 * table["Respondents"] / n if n else 0.0
     return table.sort_values(["Respondents", "Technology"], ascending=[False, True], ignore_index=True), n
+
+
+def language_adoption_counts(group):
+    """Split interest in each language by past use among paired responses."""
+    columns = ["LanguagesHaveWorkedWith", "LanguagesWantToWorkWith"]
+    counts = {}
+    paired = 0
+    for past, desired in group[columns].dropna().itertuples(index=False, name=None):
+        used = {item.strip() for item in past.split(";") if item.strip()}
+        wanted = {item.strip() for item in desired.split(";") if item.strip()}
+        if not used or not wanted:
+            continue
+        paired += 1
+        for language in wanted - {"Other, please specify"}:
+            row = counts.setdefault(language, {"Used last year": 0, "No reported past-year use": 0})
+            row["Used last year" if language in used else "No reported past-year use"] += 1
+    return counts, paired

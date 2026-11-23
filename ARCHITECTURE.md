@@ -20,3 +20,7 @@ For each family and measure, the denominator counts people who selected at least
 `st.cache_data` retains the loaded columns between interactions. The cache key includes the file path and its modification time. Widgets store the current choices under the session keys `region`, `family`, and `metric`. The dashboard recalculates the ranking for the current selection.
 
 The shared dashboard lives on `main`. Each team member can develop an analysis on a dedicated branch and reuse the common population and ranking functions. When adding a measure, define its denominator and unit in the analysis code before displaying it. The selector’s five technology families provide descriptive views. The team chooses the questions for its individual analyses.
+
+## Language adoption
+
+The entry point shares the cached survey and region filter between Overview and Language adoption using Streamlit navigation. Overview lives in `views/overview.py`. The adoption page in `views/language_adoption.py` adds a language selector and calls `logic.language_adoption_counts`. The function pairs each respondent’s past-use and desired-use answers, then splits those interested in each language into two mutually exclusive groups. Each percentage uses the number who answered both questions and want that language. Missing answers are excluded before classification.

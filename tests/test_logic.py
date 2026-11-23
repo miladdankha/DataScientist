@@ -23,3 +23,18 @@ class PopulationAndRanking(unittest.TestCase):
         empty, n = ranking(french.iloc[:0], "Languages", "Past-year use")
         self.assertTrue(empty.empty)
         self.assertEqual(n, 0)
+
+
+    def test_adoption_pairs_questions_and_matches_whole_language_names(self):
+        from logic import language_adoption_counts
+
+        group = pd.DataFrame({
+            "LanguagesHaveWorkedWith": ["C++;Rust", "C", None, " ", "Rust", "C"],
+            "LanguagesWantToWorkWith": ["C;Rust;Rust", "C;Other, please specify", "Rust", "C", None, "Other, please specify"],
+        })
+        counts, paired = language_adoption_counts(group)
+        self.assertEqual(paired, 3)
+        self.assertEqual(counts, {
+            "C": {"Used last year": 1, "No reported past-year use": 1},
+            "Rust": {"Used last year": 1, "No reported past-year use": 0},
+        })
