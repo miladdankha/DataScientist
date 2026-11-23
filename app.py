@@ -2,7 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from get_data import ANSWERS
+from get_data import ANSWERS, SCHEMA, fetch
 from logic import FAMILIES, METRICS, load_survey, population, ranking
 
 st.set_page_config(page_title="Technologies · Engineering School", layout="wide")
@@ -15,10 +15,15 @@ def cached_survey(path: Path, modification_ns: int):
 
 st.title("Which languages and tools should the school emphasize next year?")
 st.caption("Engineering curriculum · 2026 Stack Overflow Developer Survey")
-if not ANSWERS.is_file():
-    st.info("Run the command below to download the official survey, then refresh this page.")
-    st.code("uv run python get_data.py", language="bash")
-    st.stop()
+if not ANSWERS.is_file() or not SCHEMA.is_file():
+    try:
+        with st.spinner("Downloading and verifying the official survey files…"):
+            fetch()
+    except (OSError, ValueError) as exc:
+        st.error(f"The survey files could not be loaded: {exc}")
+        if st.button("Retry download"):
+            st.rerun()
+        st.stop()
 
 survey = cached_survey(ANSWERS, ANSWERS.stat().st_mtime_ns)
 with st.sidebar:

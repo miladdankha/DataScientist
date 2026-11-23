@@ -14,7 +14,9 @@ uv run python get_data.py
 uv run streamlit run app.py
 ```
 
-Open the local URL printed by Streamlit. The project uses Python 3.12. The download script saves the public responses and survey schema in `data/` and verifies each file’s SHA-256 checksum. Both CSVs stay local and can be reused on subsequent runs.
+On Streamlit Community Cloud, select `main`, `app.py`, and Python 3.12. The app downloads and verifies the official files on first launch.
+
+For local use, open the URL printed by Streamlit. The project uses Python 3.12. The download script saves the public responses and survey schema in `data/` and verifies each file’s SHA-256 checksum. Both CSVs stay local and can be reused on subsequent runs.
 
 ## Read the dashboard
 
